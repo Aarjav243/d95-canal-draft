@@ -243,7 +243,7 @@ function start(D, P, V) {
     map.addLayer({ id: "canal", type: "line", source: "canal", paint: { "line-color": "#38bdf8", "line-width": 2.5 } });
     map.addLayer({ id: "sel", type: "line", source: "fields", filter: ["==", ["get", "i"], -1], paint: { "line-color": "#ff3b30", "line-width": 3 } });
     map.addLayer({ id: "hit", type: "fill", source: "fields", paint: { "fill-opacity": 0 } });
-    map.on("click", "hit", e => select(e.features[0].properties.i));
+    map.on("click", "hit", e => { const i = e.features[0].properties.i; select(i); zoomTo(i); });
     map.on("mouseenter", "hit", () => map.getCanvas().style.cursor = "pointer");
     map.on("mouseleave", "hit", () => map.getCanvas().style.cursor = "");
     for (const [id, layers] of [["o-wucs", ["wucs"]], ["o-canal", ["canal"]], ["o-vil", ["vil"]]]) {
@@ -354,6 +354,12 @@ function start(D, P, V) {
     }
     $("wl").innerHTML = h;
   })();
+
+  function zoomTo(i) {
+    const g = D.fields.features[i].geometry, b = new maplibregl.LngLatBounds();
+    (g.type === "Polygon" ? [g.coordinates] : g.coordinates).forEach(p => p[0].forEach(c => b.extend(c)));
+    map.fitBounds(b, { padding: 120, maxZoom: 18, duration: 800 });
+  }
 
   function select(i) {
     st.sel = i; map.setFilter("sel", ["==", ["get", "i"], i]);
