@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D-95 · Raichur canal water</title>
+<meta name="description" content="Draft: canal water and crop growth for the 5,313 fields of the D-95 branch, Tungabhadra Left Bank canal, Raichur.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<style>
+/* Same layout as Well Labs T-Lab: top bar, left layer panel, map, right summary panel. One light theme on purpose, like T-Lab. */
+:root {
+  --navy: #00296b; --muted: #5b6b86; --bg: #f4f7fb; --side: #f8fafc; --card: #ffffff; --line: #e5eaf0;
+  --blue: #1f6feb; --blue-soft: #e8f0fe; --pass: #1f8a4c; --fail: #c2412d; --amber-bg: #fff4e0; --amber: #8a4b00;
+  --water: #1f6fb2; --water-soft: #a9cbe6; --dry: #d8c7a3; --none: #cfd6e0;
+  --f-head: "Josefin Sans", "Trebuchet MS", sans-serif; --f-body: Montserrat, "Segoe UI", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; margin: 0; }
+body { background: var(--bg); color: var(--navy); font: 14px/1.5 var(--f-body); display: grid; grid-template-rows: 56px 1fr; }
+h1, h2, h3 { font-family: var(--f-head); font-weight: 700; margin: 0; text-wrap: balance; }
+h1 { font-size: 1.3rem; } h2 { font-size: 1.2rem; } h3 { font-size: .85rem; }
+p { margin: 0; }
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 20px 0 16px; background: #fff; border-bottom: 1px solid var(--line); }
+.top img { height: 34px; width: auto; display: block; }
+.top nav { display: flex; gap: 8px; align-items: center; }
+.pill { font: 500 .8rem var(--f-body); padding: 6px 12px; border-radius: 8px; color: var(--navy); white-space: nowrap; }
+.pill.on { background: var(--blue); color: #fff; }
+.pill.draft { background: var(--amber-bg); color: var(--amber); }
+.app { display: grid; grid-template-columns: 320px minmax(0, 1fr) 368px; min-height: 0; }
+aside { overflow-y: auto; padding: 16px; display: grid; gap: 14px; align-content: start; }
+.left { background: var(--side); border-right: 1px solid var(--line); }
+.right { background: var(--card); border-left: 1px solid var(--line); padding: 0; gap: 0; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 14px; display: grid; gap: 8px; }
+.cap { font: 600 .7rem var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.cap span { font-weight: 400; text-transform: none; letter-spacing: 0; margin-left: 6px; }
+.muted { color: var(--muted); } .small { font-size: .8rem; }
+.note { background: var(--amber-bg); border-color: #f3dcb4; color: var(--amber); font-size: .82rem; }
+.layer { cursor: pointer; display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+.layer b { font: 700 .95rem var(--f-head); }
+.layer small { grid-column: 1; color: var(--muted); font-size: .76rem; line-height: 1.35; }
+.layer input { grid-row: 1 / span 2; grid-column: 2; width: 18px; height: 18px; accent-color: var(--blue); }
+.layer:has(input:checked) { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue) inset; }
+.layer:focus-within { outline: 2px solid var(--blue); outline-offset: 2px; }
+.overlays label { display: flex; gap: 8px; align-items: center; font-size: .84rem; padding: 3px 0; cursor: pointer; }
+.overlays input { accent-color: var(--blue); }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 12px; margin: 0; font-size: .82rem; }
+dt { color: var(--muted); } dd { margin: 0; font-weight: 500; }
+.labs { font-size: .76rem; display: grid; gap: 1px; }
+.labs div { display: flex; justify-content: space-between; gap: 8px; }
+/* map */
+.mapwrap { position: relative; min-width: 0; min-height: 0; }
+#map { position: absolute; inset: 0; background: #0f172a; }
+.float { position: absolute; left: 12px; bottom: 34px; width: 300px; max-width: calc(100% - 24px); background: #fff; border-radius: 10px; box-shadow: 0 4px 18px rgba(0, 41, 107, .18); padding: 12px 14px; display: grid; gap: 8px; z-index: 2; }
+.float .row { display: flex; gap: 10px; }
+.float .row > label { flex: 1; display: grid; gap: 2px; font-size: .7rem; color: var(--muted); }
+.float-head { display: flex; justify-content: space-between; align-items: baseline; }
+.float-head button { border: 0; background: none; color: var(--blue); font: 500 .78rem var(--f-body); cursor: pointer; padding: 2px 4px; }
+select { font: .78rem var(--f-body); color: var(--navy); background: #fff; border: 1px solid rgba(0, 41, 107, .15); border-radius: 6px; padding: 5px 6px; width: 100%; }
+select:focus-visible, button:focus-visible { outline: 2px solid var(--blue); outline-offset: 1px; }
+.ramp { height: 10px; border-radius: 3px; }
+.ticks { display: flex; justify-content: space-between; font-size: .68rem; color: var(--muted); }
+.keys { display: grid; gap: 3px; font-size: .76rem; }
+.keys span { display: flex; align-items: center; gap: 8px; }
+.sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; flex: none; }
+.vlabel { font: 600 11px var(--f-body); color: #fff; text-shadow: 0 1px 3px #000, 0 0 2px #000; pointer-events: none; white-space: nowrap; }
+/* right panel */
+.sec { padding: 18px 18px; border-bottom: 1px solid var(--line); display: grid; gap: 10px; }
+.title { display: flex; gap: 10px; align-items: center; }
+.title i { width: 14px; height: 14px; border-radius: 3px; background: linear-gradient(135deg, #3f8f3f, #1f6fb2); }
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+.stat .k { font-size: .75rem; color: var(--muted); }
+.stat .v { font: 700 1.25rem var(--f-body); font-variant-numeric: tabular-nums; }
+.stat .s { font-size: .7rem; color: var(--muted); }
+.big .v { font-size: 1.6rem; }
+.tests { display: grid; gap: 6px; }
+.test { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: .8rem; }
+.test small { grid-column: 2; color: var(--muted); font-size: .74rem; line-height: 1.35; }
+.chip { font: 700 .62rem var(--f-body); letter-spacing: .06em; padding: 2px 7px; border-radius: 99px; border: 1.5px solid; height: fit-content; margin-top: 2px; }
+.chip.pass { color: var(--pass); } .chip.fail { color: var(--fail); }
+.wl { display: grid; grid-template-columns: 34px repeat(5, 1fr); gap: 4px 5px; align-items: center; font-size: .66rem; }
+.wl .h { color: var(--muted); text-align: center; }
+.bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; height: 12px; border-radius: 2px; overflow: hidden; }
+.bar i { background: var(--none); }
+.bar.shut { outline: 1.5px solid var(--fail); outline-offset: 1px; }
+.years { display: grid; gap: 5px; }
+.yr { display: grid; grid-template-columns: 74px 1fr 40px; gap: 8px; align-items: center; font-size: .78rem; cursor: pointer; border: 0; background: none; color: var(--navy); font-family: var(--f-body); padding: 1px 0; text-align: left; }
+.yr .b { height: 12px; background: var(--blue); border-radius: 2px; }
+.yr.sel { font-weight: 700; } .yr.sel .b { outline: 2px solid var(--navy); outline-offset: 1px; }
+.yr .n { text-align: right; font-variant-numeric: tabular-nums; color: var(--muted); }
+#chart svg { width: 100%; height: auto; display: block; }
+#chart text { font: 9px var(--f-body); fill: var(--muted); }
+.src { font-size: .76rem; color: var(--muted); display: grid; gap: 6px; }
+.src a { color: var(--blue); }
+@media (max-width: 1100px) { .app { grid-template-columns: 300px minmax(0, 1fr); } .right { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); } body { height: auto; } .app { min-height: calc(100vh - 56px); } .mapwrap { min-height: 640px; } }
+@media (max-width: 720px) { .app { grid-template-columns: minmax(0, 1fr); } .mapwrap { min-height: 70vh; order: -1; } .left { border-right: 0; } .top nav .pill:not(.draft), .top .long { display: none; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="well-labs-logo.png" alt="Well Labs">
+  <nav><span class="pill">Raichur</span><span class="pill on">D-95</span><span class="pill draft">Draft<span class="long"> · not checked on the ground</span></span></nav>
+</header>
+
+<div class="app">
+  <aside class="left">
+    <div class="card">
+      <h1>D-95 · Raichur</h1>
+      <p class="muted small">Canal water and crop growth for the 5,313 fields of D-95, a branch of the Tungabhadra Left Bank canal. Pick a layer, then click any field.</p>
+    </div>
+    <div class="card note">
+      <strong>Draft results</strong>
+      <span>Not checked on the ground. The work failed 2 of its 6 own tests, so the water readings are not ready to trust. Crop greenness passed its test.</span>
+    </div>
+    <div class="card" id="field">
+      <div class="cap">Selected field</div>
+      <p class="muted small">No field selected. Zoom in and click any field inside D-95.</p>
+    </div>
+
+    <div class="cap">Data layers <span>one at a time</span></div>
+    <label class="card layer"><b>Crop greenness</b><small>NDVI per field · Sentinel-2 · monthly, 2019 to 2026</small><input type="radio" name="layer" value="green" checked></label>
+    <label class="card layer"><b>Water label</b><small>Radar reading per field · Sentinel-1 · Feb–Mar 2024 (canal shut) and 2025 (open)</small><input type="radio" name="layer" value="water"></label>
+    <label class="card layer"><b>Crop-colour photo</b><small>Sentinel-2 near-infrared photo · monthly · growing crops show red, ponds dark blue</small><input type="radio" name="layer" value="photo"></label>
+    <label class="card layer"><b>Field outlines</b><small>Plot outlines from Google ALU over the satellite photo</small><input type="radio" name="layer" value="outline"></label>
+
+    <div class="cap">Overlays</div>
+    <div class="card overlays">
+      <label><input type="checkbox" id="o-wucs" checked> Boundaries · water user groups</label>
+      <label><input type="checkbox" id="o-canal" checked> Canal · D-95 and main canal</label>
+      <label><input type="checkbox" id="o-vil" checked> Villages · 12</label>
+    </div>
+  </aside>
+
+  <div class="mapwrap">
+    <div id="map" role="region" aria-label="Map of D-95 fields"></div>
+    <div class="float" id="float">
+      <div class="float-head"><h3 id="f-title">Crop greenness</h3><button id="f-hide" type="button">Hide</button></div>
+      <div id="f-body" style="display:grid;gap:8px">
+        <div class="row" id="f-pick"></div>
+        <div id="f-legend"></div>
+        <p class="small muted" id="f-note" style="font-size:.7rem"></p>
+      </div>
+    </div>
+  </div>
+
+  <aside class="right">
+    <div class="sec">
+      <div class="title"><i></i><h2 id="r-title">Crop greenness</h2></div>
+      <p class="small muted" id="r-sub">D-95 · Tungabhadra Left Bank canal</p>
+    </div>
+    <div class="sec">
+      <div class="stats">
+        <div class="stat big" style="grid-column:1/-1"><div class="k" id="s1k">Typical greenness</div><div class="v" id="s1v">–</div><div class="s" id="s1s"></div></div>
+        <div class="stat"><div class="k">Fields</div><div class="v">5,313</div><div class="s">inside water user group outlines</div></div>
+        <div class="stat"><div class="k">Area</div><div class="v">2,532 ha</div><div class="s">half the fields under 0.28 ha</div></div>
+        <div class="stat"><div class="k" id="s2k">Fields seen</div><div class="v" id="s2v">–</div><div class="s" id="s2s"></div></div>
+        <div class="stat"><div class="k">Tests passed</div><div class="v">4 of 6</div><div class="s">tests 3 and 4 fail</div></div>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Every dry season</h3>
+      <p class="small muted">Typical Jan–Mar greenness of D-95 fields each year. The canal was shut in early 2024. Click a bar to show that year's February on the map.</p>
+      <div class="years" id="years"></div>
+    </div>
+    <div class="sec">
+      <h3>Water line by stretch <span class="chip fail" style="margin-left:6px">DRAFT</span></h3>
+      <p class="small muted">Each bar is the branch drawn straight, start on the left, last field on the right, in 4 stretches. Blue means wetter than land with no canal (radar, dry days only). A red frame means the canal was shut.</p>
+      <div class="wl" id="wl"></div>
+      <div class="keys" style="grid-template-columns:1fr 1fr">
+        <span><i class="sw" style="background:var(--water)"></i>wetter by 0.67 dB+</span><span><i class="sw" style="background:var(--water-soft)"></i>a little wetter</span>
+        <span><i class="sw" style="background:var(--dry)"></i>drier than outside</span><span><i class="sw" style="background:var(--none)"></i>no dry picture</span>
+      </div>
+    </div>
+    <div class="sec">
+      <h3>Six tests, set before any result</h3>
+      <div class="tests">
+        <div class="test"><span class="chip pass">PASS</span><span>Shut year looks dry</span><small>Feb–Mar 2024: every stretch drier than outside land.</small></div>
+        <div class="test"><span class="chip pass">PASS</span><span>Start of canal wetter than end</span><small>5 of 6 open years, but shut 2024 shows it too.</small></div>
+        <div class="test"><span class="chip fail">FAIL</span><span>Open years wetter than shut year</span><small>Needed 5 of 6 years ahead of 2024 by 0.67 dB; got 1.</small></div>
+        <div class="test"><span class="chip fail">FAIL</span><span>Wetness drops after canal shuts</span><small>Needed 4 of 6 dates; got 1. Few pictures around late-April shut dates.</small></div>
+        <div class="test"><span class="chip pass">PASS</span><span>Field label repeats</span><small>83–89% on fields of 0.5 ha+, with smoothing.</small></div>
+        <div class="test"><span class="chip pass">PASS</span><span>Canal land greener than outside</span><small>Jan–Mar lead 0.10–0.14 in open years, 0.01 in shut 2024.</small></div>
+      </div>
+    </div>
+    <div class="sec src">
+      <div><div class="cap">Resolution</div>Greenness 10 m per field · radar 30 m per stretch, 10 m per field · photo 10 m</div>
+      <div><div class="cap">Source</div>Sentinel-2 and Sentinel-1 (Copernicus) through Google Earth Engine · plot outlines and crop guesses: Google Agricultural Understanding via Well Labs · canal dates: <a href="https://tbboard.gov.in/annual-reports/" target="_blank" rel="noopener">Tungabhadra Board yearly reports</a></div>
+      <div>Cloud-masked pictures (Cloud Score+ 0.6), monthly median. Months with no clear picture stay empty; nothing is filled in. Radar cannot tell canal water from borewell water. Crop names are Google's guesses. No farmer names or survey numbers are used.</div>
+    </div>
+  </aside>
+</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const ym = s => MON[+s.slice(5, 7) - 1] + " " + s.slice(0, 4);
+const fmtDate = s => +s.slice(8) + " " + ym(s);
+const NDVI_STOPS = [[0.10, "#c9b48a"], [0.25, "#d9d27a"], [0.40, "#8fbf5a"], [0.55, "#3f8f3f"], [0.70, "#1e5a2c"]];
+const LAB_COL = ["#1f6fb2", "#8e7cc3", "#e0802b", "#d8c7a3", "#9aa3a0"];
+const NONE = "#cfd6e0";
+const $ = id => document.getElementById(id);
+const median = a => { const b = a.filter(v => v != null).sort((x, y) => x - y); return b.length ? b[b.length >> 1] : null; };
+
+Promise.all(["data.json", "photos/photos.json", "villages.json"].map(u => fetch(u).then(r => r.json()))).then(([D, P, V]) => start(D, P, V));
+
+function start(D, P, V) {
+  const goodMonths = D.months.map((m, i) => i).filter(i => D.seen[i] >= 0.5);
+  const st = { layer: "green", m: goodMonths.filter(i => +D.months[i].slice(5) <= 3).pop(), l: D.label_dates.length - 1, p: P.months.length - 1, sel: null };
+  // photo month that matches the greenness month, when there is one
+  const pFor = i => { const k = P.months.indexOf(D.months[i]); return k >= 0 ? k : st.p; };
+
+  const bounds = new maplibregl.LngLatBounds(P.corners[3], P.corners[1]);
+  const map = new maplibregl.Map({
+    container: "map", bounds, fitBoundsOptions: { padding: 30 }, maxZoom: 18, attributionControl: false,
+    style: { version: 8,
+      sources: { esri: { type: "raster", tileSize: 256, maxzoom: 18,
+        tiles: ["https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"],
+        attribution: "Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community" } },
+      layers: [{ id: "esri", type: "raster", source: "esri" }] },
+  });
+  map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-left");
+  map.addControl(new maplibregl.ScaleControl({ maxWidth: 90 }), "top-right");
+  map.addControl(new maplibregl.AttributionControl({ compact: false, customAttribution: "Fields: Google ALU via Well Labs · Sentinel-1, Sentinel-2 (Copernicus)" }), "bottom-right");
+
+  const has = ["==", ["typeof", ["feature-state", "v"]], "number"];
+  const greenPaint = ["case", has, ["interpolate", ["linear"], ["feature-state", "v"], ...NDVI_STOPS.flatMap(([v, c]) => [v * 100, c])], NONE];
+  const waterPaint = ["case", has, ["match", ["floor", ["/", ["feature-state", "v"], 3]], ...LAB_COL.flatMap((c, i) => [i, c]), NONE], NONE];
+  const vMarkers = V.features.map(f => new maplibregl.Marker({ element: Object.assign(document.createElement("div"), { className: "vlabel", textContent: f.properties.name }) }).setLngLat([f.properties.x, f.properties.y]));
+
+  map.on("load", () => {
+    map.addSource("photo", { type: "image", url: `photos/${P.months[st.p]}.webp`, coordinates: P.corners });
+    map.addSource("fields", { type: "geojson", data: D.fields });
+    map.addSource("wucs", { type: "geojson", data: D.wucs });
+    map.addSource("canal", { type: "geojson", data: D.canal });
+    map.addSource("vil", { type: "geojson", data: V });
+    map.addLayer({ id: "photo", type: "raster", source: "photo", layout: { visibility: "none" }, paint: { "raster-fade-duration": 0 } });
+    map.addLayer({ id: "vil", type: "line", source: "vil", paint: { "line-color": "#ffffff", "line-width": 0.8, "line-opacity": 0.55 } });
+    map.addLayer({ id: "fill", type: "fill", source: "fields", paint: { "fill-color": greenPaint, "fill-opacity": 0.85 } });
+    map.addLayer({ id: "edge", type: "line", source: "fields", paint: { "line-color": "#ffffff", "line-opacity": 0.7, "line-width": ["interpolate", ["linear"], ["zoom"], 12, 0.1, 16, 1] } });
+    map.addLayer({ id: "wucs", type: "line", source: "wucs", paint: { "line-color": "#ffd84d", "line-width": 2 } });
+    map.addLayer({ id: "canal", type: "line", source: "canal", paint: { "line-color": "#38bdf8", "line-width": 2.5 } });
+    map.addLayer({ id: "sel", type: "line", source: "fields", filter: ["==", ["get", "i"], -1], paint: { "line-color": "#ff3b30", "line-width": 3 } });
+    map.addLayer({ id: "hit", type: "fill", source: "fields", paint: { "fill-opacity": 0 } });
+    map.on("click", "hit", e => select(e.features[0].properties.i));
+    map.on("mouseenter", "hit", () => map.getCanvas().style.cursor = "pointer");
+    map.on("mouseleave", "hit", () => map.getCanvas().style.cursor = "");
+    for (const [id, layers] of [["o-wucs", ["wucs"]], ["o-canal", ["canal"]], ["o-vil", ["vil"]]]) {
+      const set = () => { layers.forEach(l => map.setLayoutProperty(l, "visibility", $(id).checked ? "visible" : "none")); if (id === "o-vil") vMarkers.forEach(m => $(id).checked ? m.addTo(map) : m.remove()); };
+      $(id).addEventListener("change", set); set();
+    }
+    document.querySelectorAll("input[name=layer]").forEach(r => r.addEventListener("change", () => { st.layer = r.value; render(); }));
+    render();
+  });
+  $("f-hide").onclick = () => { const b = $("f-body"), h = b.hidden = !b.hidden; $("f-hide").textContent = h ? "Show" : "Hide"; };
+
+  function options(list, cur) { return list.map(([v, t]) => `<option value="${v}"${v == cur ? " selected" : ""}>${t}</option>`).join(""); }
+
+  function picker() {
+    const box = $("f-pick");
+    box.hidden = st.layer === "outline";
+    if (st.layer === "water") {
+      box.innerHTML = `<label>Radar date<select id="p-l">${options(D.label_dates.map((d, i) => [i, fmtDate(d) + (d < "2025" ? " · canal shut" : " · canal open")]), st.l)}</select></label>`;
+      $("p-l").onchange = e => { st.l = +e.target.value; render(); };
+      return;
+    }
+    const list = st.layer === "photo" ? P.months.map((m, k) => [m, k]) : goodMonths.map(i => [D.months[i], i]);
+    const cur = st.layer === "photo" ? P.months[st.p] : D.months[st.m];
+    const years = [...new Set(list.map(([m]) => m.slice(0, 4)))];
+    const inYear = list.filter(([m]) => m.startsWith(cur.slice(0, 4)));
+    box.innerHTML = `<label>Year<select id="p-y">${options(years.map(y => [y, y]), cur.slice(0, 4))}</select></label>
+      <label>Month<select id="p-m">${options(inYear.map(([m, k]) => [k, MON[+m.slice(5) - 1]]), list.find(([m]) => m === cur)[1])}</select></label>`;
+    const setK = k => { if (st.layer === "photo") st.p = k; else { st.m = k; st.p = pFor(k); } render(); };
+    $("p-m").onchange = e => setK(+e.target.value);
+    $("p-y").onchange = e => { const y = e.target.value, same = list.filter(([m]) => m.startsWith(y)); setK((same.find(([m]) => m.slice(5) === cur.slice(5)) || same[0])[1]); };
+  }
+
+  function render() {
+    const L = st.layer, photoOn = L === "photo", fillOn = L === "green" || L === "water";
+    map.setLayoutProperty("photo", "visibility", photoOn ? "visible" : "none");
+    map.setLayoutProperty("fill", "visibility", fillOn ? "visible" : "none");
+    if (photoOn) map.getSource("photo").updateImage({ url: `photos/${P.months[st.p]}.webp`, coordinates: P.corners });
+    if (fillOn) {
+      const src = L === "green" ? D.ndvi : D.labels, k = L === "green" ? st.m : st.l;
+      for (let i = 0; i < D.ids.length; i++) map.setFeatureState({ source: "fields", id: i }, { v: src[i][k] });
+      map.setPaintProperty("fill", "fill-color", L === "green" ? greenPaint : waterPaint);
+    }
+    const titles = { green: "Crop greenness", water: "Water label", photo: "Crop-colour photo", outline: "Field outlines" };
+    $("f-title").textContent = $("r-title").textContent = titles[L];
+    picker();
+    let leg = "", note = "";
+    if (L === "green") {
+      leg = `<div class="ramp" style="background:linear-gradient(90deg,${NDVI_STOPS.map(s => s[1]).join(",")})"></div><div class="ticks"><span>0.1 bare</span><span>0.4</span><span>0.7 dense crop</span></div>`;
+      note = "NDVI per field, monthly median of clear Sentinel-2 pictures. Grey = no clear picture that month.";
+    } else if (L === "water") {
+      leg = `<div class="keys">${D.label_names.map((n, i) => `<span><i class="sw" style="background:${LAB_COL[i]}"></i>${n}</span>`).join("")}</div>`;
+      note = "Draft: these readings come from tests that failed 2 of 6. Radar cannot tell canal water from borewell water.";
+    } else if (L === "photo") {
+      leg = `<div class="keys"><span><i class="sw" style="background:#e3263a"></i>growing crop</span><span><i class="sw" style="background:#9b7a5f"></i>bare or harvested land</span><span><i class="sw" style="background:#1d2b55"></i>water, farm ponds</span></div>`;
+      note = "Sentinel-2 near-infrared, red, green, 10 m. Gaps are clouds. Only months with mostly clear sky.";
+    } else {
+      note = "Plot outlines from Google Agricultural Understanding over the Esri satellite photo (date of photo not known).";
+    }
+    $("f-legend").innerHTML = leg; $("f-note").textContent = note;
+    stats(); years(); if (st.sel != null) select(st.sel);
+  }
+
+  function stats() {
+    const L = st.layer;
+    if (L === "water") {
+      const k = st.l, n = D.labels.map(r => r[k]).filter(v => v != null), canal = n.filter(v => Math.floor(v / 3) === 0).length, bore = n.filter(v => Math.floor(v / 3) === 2).length;
+      $("s1k").textContent = "Fields with a water reading"; $("s1v").textContent = n.length.toLocaleString("en-IN"); $("s1s").textContent = fmtDate(D.label_dates[k]);
+      $("s2k").textContent = "Canal water / Borewell"; $("s2v").textContent = `${canal.toLocaleString("en-IN")} / ${bore.toLocaleString("en-IN")}`; $("s2s").textContent = "fields, draft";
+      $("r-sub").textContent = `D-95 · ${fmtDate(D.label_dates[k])} · radar track 63`;
+    } else {
+      const k = L === "photo" ? D.months.indexOf(P.months[st.p]) : st.m, col = D.ndvi.map(r => r[k]), med = median(col);
+      $("s1k").textContent = "Typical field greenness (NDVI)"; $("s1v").textContent = med == null ? "–" : (med / 100).toFixed(2); $("s1s").textContent = "middle value of all fields · " + ym(D.months[k]);
+      $("s2k").textContent = "Fields seen"; $("s2v").textContent = Math.round(D.seen[k] * 100) + "%"; $("s2s").textContent = "had a clear picture that month";
+      $("r-sub").textContent = `D-95 · ${ym(D.months[k])}`;
+    }
+  }
+
+  // every dry season: median Jan-Mar greenness per year
+  const dry = {};
+  D.months.forEach((m, k) => { if (+m.slice(5) <= 3) (dry[m.slice(0, 4)] ||= []).push(median(D.ndvi.map(r => r[k]))); });
+  const dryVal = Object.entries(dry).map(([y, a]) => [y, a.filter(v => v != null).reduce((s, v) => s + v, 0) / a.filter(v => v != null).length / 100]);
+  const dryMax = Math.max(...dryVal.map(d => d[1]));
+  function years() {
+    const curY = st.layer === "photo" ? P.months[st.p].slice(0, 4) : st.layer === "green" ? D.months[st.m].slice(0, 4) : null;
+    $("years").innerHTML = dryVal.slice().reverse().map(([y, v]) => `<button class="yr${y === curY ? " sel" : ""}" data-y="${y}" type="button"><span>Jan–Mar ${y}${y === "2024" ? " ·shut" : ""}</span><span class="b" style="width:${(v / dryMax * 100).toFixed(1)}%;${y === "2024" ? "background:var(--fail)" : ""}"></span><span class="n">${v.toFixed(2)}</span></button>`).join("");
+    $("years").querySelectorAll("button").forEach(b => b.onclick = () => {
+      const k = D.months.indexOf(b.dataset.y + "-02");
+      if (k < 0) return;
+      if (st.layer !== "green" && st.layer !== "photo") document.querySelector("input[value=green]").checked = true, st.layer = "green";
+      st.m = k; st.p = pFor(k); render();
+    });
+  }
+
+  // water line grid, built once
+  (function waterLine() {
+    const by = Object.fromEntries(D.line.map(r => [r.ym, r]));
+    const ys = [...new Set(D.line.map(r => r.ym.slice(0, 4)))], ms = [...new Set(D.line.map(r => +r.ym.slice(5)))].sort((a, b) => a - b);
+    const col = g => g == null ? "var(--none)" : g >= D.wet_db ? "var(--water)" : g > 0 ? "var(--water-soft)" : "var(--dry)";
+    let h = `<span></span>` + ms.map(m => `<span class="h">${MON[m - 1]}</span>`).join("");
+    for (const y of ys) {
+      h += `<span>${y}</span>`;
+      for (const m of ms) {
+        const r = by[`${y}-${String(m).padStart(2, "0")}`];
+        if (!r) { h += `<div class="bar" title="no picture">${"<i></i>".repeat(4)}</div>`; continue; }
+        const tip = `${ym(r.ym)} · canal ${r.open === true ? "open" : r.open === false ? "shut" : "no Board date"} · ` + r.gap.map((g, i) => `stretch ${i + 1}: ${g == null ? "none" : (g > 0 ? "+" : "") + g.toFixed(2) + " dB"}`).join(", ");
+        h += `<div class="bar${r.open === false ? " shut" : ""}" title="${tip}" role="img" aria-label="${tip}">${r.gap.map(g => `<i style="background:${col(g)}"></i>`).join("")}</div>`;
+      }
+    }
+    $("wl").innerHTML = h;
+  })();
+
+  function select(i) {
+    st.sel = i; map.setFilter("sel", ["==", ["get", "i"], i]);
+    const n = D.ndvi[i], e = D.evi[i], s = D.fields.features[i].properties.s, edges = D.stretch_edges_m;
+    const last = n.map((v, k) => v != null ? k : -1).filter(k => k >= 0).pop();
+    const labs = D.label_dates.map((d, k) => D.labels[i][k] == null ? "" : `<div><span>${fmtDate(d)}</span><span>${D.label_names[Math.floor(D.labels[i][k] / 3)]} · ${D.conf_names[D.labels[i][k] % 3]}</span></div>`).join("");
+    $("field").innerHTML = `<div class="cap">Selected field</div>
+      <dl><dt>Field</dt><dd>${D.ids[i]}</dd><dt>Size</dt><dd>${D.ha[i].toFixed(2)} ha</dd>
+        <dt>Stretch</dt><dd>${s} of 4 · ${edges[s - 1] / 1000}–${edges[s] / 1000} km from start</dd>
+        <dt>Crop</dt><dd>${D.crop[i] ? "likely " + D.crop[i] + " (Google guess)" : "crop not known"}</dd>
+        <dt>Last clear picture</dt><dd>${last == null ? "none" : ym(D.months[last])}</dd></dl>
+      <div class="cap" style="margin-top:4px">Growth line <span>NDVI green, EVI brown</span></div><div id="chart">${chart(n, e)}</div>
+      <div class="cap">Radar water label <span>how sure</span></div><div class="labs">${labs || '<span class="muted">No readings.</span>'}</div>`;
+  }
+
+  function chart(n, e) {
+    const W = 290, H = 120, L = 22, R = 4, T = 6, B = 16, M = D.months.length;
+    const x = k => L + (W - L - R) * k / (M - 1), y = v => T + (H - T - B) * (1 - Math.max(0, Math.min(100, v)) / 100);
+    const path = a => { let d = "", up = false; a.forEach((v, k) => { if (v == null) { up = false; return; } d += (up ? "L" : "M") + x(k).toFixed(1) + " " + y(v).toFixed(1); up = true; }); return d; };
+    let g = "";
+    [0, 50, 100].forEach(v => g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#e5eaf0"/><text x="${L - 3}" y="${y(v) + 3}" text-anchor="end">${(v / 100).toFixed(1)}</text>`);
+    D.months.forEach((m, k) => { if (m.endsWith("-01")) g += `<line x1="${x(k)}" x2="${x(k)}" y1="${T}" y2="${H - B}" stroke="#e5eaf0"/>${+m.slice(2, 4) % 2 ? `<text x="${x(k) + 2}" y="${H - 4}">'${m.slice(2, 4)}</text>` : ""}`; });
+    const k = st.layer === "green" ? st.m : st.layer === "photo" ? D.months.indexOf(P.months[st.p]) : -1;
+    if (k >= 0) g += `<rect x="${x(k) - 2}" y="${T}" width="4" height="${H - T - B}" fill="#1f6feb" opacity=".25"/>`;
+    return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Field greenness by month, 2019 to 2026">${g}<path d="${path(e)}" fill="none" stroke="#a07a28" stroke-width="1.1"/><path d="${path(n)}" fill="none" stroke="#2e7d4f" stroke-width="1.5"/></svg>`;
+  }
+}
+</script>
+</body>
+</html>
