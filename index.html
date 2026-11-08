@@ -95,13 +95,13 @@ select:focus-visible, button:focus-visible { outline: 2px solid var(--blue); out
 .src { font-size: .76rem; color: var(--muted); display: grid; gap: 6px; }
 .src a { color: var(--blue); }
 @media (max-width: 1100px) { .app { grid-template-columns: 300px minmax(0, 1fr); } .right { grid-column: 1 / -1; border-left: 0; border-top: 1px solid var(--line); } body { height: auto; } .app { min-height: calc(100vh - 56px); } .mapwrap { min-height: 640px; } }
-@media (max-width: 720px) { .app { grid-template-columns: minmax(0, 1fr); } .mapwrap { min-height: 70vh; order: -1; } .left { border-right: 0; } .top nav .pill:not(.draft), .top .long { display: none; } }
+@media (max-width: 720px) { .app { grid-template-columns: minmax(0, 1fr); } .mapwrap { min-height: 70vh; order: -1; } .left { border-right: 0; } .top nav .pill:not(.draft):not(.guide), .top .long { display: none; } }
 </style>
 </head>
 <body>
 <header class="top">
   <img src="well-labs-logo.png" alt="Well Labs">
-  <nav><span class="pill">Raichur</span><span class="pill on">D-95</span><span class="pill draft">Draft<span class="long"> · not checked on the ground</span></span></nav>
+  <nav><a class="pill guide" href="guide.html" style="text-decoration:none;border:1px solid var(--line)">How to use</a><span class="pill">Raichur</span><span class="pill on">D-95</span><span class="pill draft">Draft<span class="long"> · not checked on the ground</span></span></nav>
 </header>
 
 <div class="app">
@@ -297,7 +297,7 @@ function start(D, P, V) {
       leg = `<div class="keys">${D.label_names.map((n, i) => `<span><i class="sw" style="background:${LAB_COL[i]}"></i>${n}</span>`).join("")}</div>`;
       note = "Draft: these readings come from tests that failed 2 of 6. Radar cannot tell canal water from borewell water.";
     } else if (L === "photo") {
-      leg = `<div class="keys"><span><i class="sw" style="background:#e3263a"></i>growing crop</span><span><i class="sw" style="background:#9b7a5f"></i>bare or harvested land</span><span><i class="sw" style="background:#1d2b55"></i>water, farm ponds</span></div>`;
+      leg = `<div class="keys"><span><i class="sw" style="background:#e3263a"></i>growing crop</span><span><i class="sw" style="background:#d4b2b0"></i>bare or harvested land</span><span><i class="sw" style="background:#1d2b55"></i>water, farm ponds</span></div>`;
       note = "Sentinel-2 near-infrared, red, green, 10 m. Gaps are clouds. Only months with mostly clear sky.";
     } else {
       note = "Plot outlines from Google Agricultural Understanding over the Esri satellite photo (date of photo not known).";

@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How to use · D-95 map</title>
+<meta name="description" content="A first-time guide to the D-95 map: how to read crop growth (NDVI, EVI) and the radar water pattern.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@600;700&family=Montserrat:wght@400;500;600;700&display=swap">
+<style>
+:root {
+  --navy: #00296b; --muted: #5b6b86; --bg: #f4f7fb; --card: #fff; --line: #e5eaf0; --blue: #1f6feb;
+  --pass: #1f8a4c; --fail: #c2412d; --amber-bg: #fff4e0; --amber: #8a4b00; --green-bg: #e9f6ee;
+  --f-head: "Josefin Sans", "Trebuchet MS", sans-serif; --f-body: Montserrat, "Segoe UI", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--navy); font: 15px/1.65 var(--f-body); }
+.top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; height: 56px; padding: 0 20px 0 16px; background: #fff; border-bottom: 1px solid var(--line); }
+.top img { height: 34px; display: block; }
+.btn { font: 600 .82rem var(--f-body); padding: 7px 14px; border-radius: 8px; background: var(--blue); color: #fff; text-decoration: none; white-space: nowrap; }
+main { max-width: 860px; margin: 0 auto; padding: 32px 16px 80px; }
+h1, h2, h3 { font-family: var(--f-head); font-weight: 700; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: 2rem; margin: 0 0 8px; }
+h2 { font-size: 1.45rem; margin: 0 0 6px; }
+h3 { font-size: 1.05rem; margin: 26px 0 6px; }
+p, ul, ol { margin: 0 0 12px; max-width: 68ch; }
+li { margin-bottom: 4px; }
+.lead { font-size: 1.05rem; color: var(--muted); }
+section { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 26px 28px; margin-top: 22px; }
+.kicker { font: 600 .72rem var(--f-body); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.box { border-radius: 10px; padding: 12px 16px; margin: 12px 0 16px; font-size: .92rem; }
+.box p:last-child, .box ul:last-child { margin-bottom: 0; }
+.warn { background: var(--amber-bg); color: var(--amber); border: 1px solid #f3dcb4; }
+.good { background: var(--green-bg); color: #155c34; border: 1px solid #c7e7d3; }
+.chip { font: 700 .66rem var(--f-body); letter-spacing: .06em; padding: 2px 8px; border-radius: 99px; border: 1.5px solid; vertical-align: 2px; margin-left: 6px; }
+.chip.pass { color: var(--pass); } .chip.fail { color: var(--fail); }
+figure { margin: 14px 0 18px; }
+figure img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--line); }
+figcaption { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.side { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; align-items: start; }
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps > li { counter-increment: s; position: relative; padding-left: 40px; margin-bottom: 14px; }
+.steps > li::before { content: counter(s); position: absolute; left: 0; top: 1px; width: 26px; height: 26px; border-radius: 50%; background: var(--blue); color: #fff; font: 700 .8rem/26px var(--f-body); text-align: center; }
+table { border-collapse: collapse; width: 100%; font-size: .88rem; margin: 8px 0 14px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .74rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); font-weight: 600; }
+.sw { display: inline-block; width: 13px; height: 13px; border-radius: 3px; vertical-align: -2px; margin-right: 6px; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+nav.toc a { font-size: .82rem; color: var(--navy); background: #fff; border: 1px solid var(--line); border-radius: 99px; padding: 5px 12px; text-decoration: none; }
+nav.toc a:hover, .btn:hover { filter: brightness(.95); }
+a { color: var(--blue); }
+a:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.can, .cant { padding-left: 20px; }
+@media (max-width: 720px) { section { padding: 20px 16px; } .two, .side { grid-template-columns: 1fr; } h1 { font-size: 1.6rem; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <a href="./"><img src="well-labs-logo.png" alt="Well Labs, back to the map"></a>
+  <a class="btn" href="./">Open the map</a>
+</header>
+
+<main>
+  <div class="kicker">First-time guide</div>
+  <h1>How to use the D-95 map</h1>
+  <p class="lead">The map answers two questions about the D-95 branch of the Tungabhadra Left Bank canal in Raichur: how the crops are growing, and where the water is going. This page shows you, step by step, how to read each one.</p>
+  <div class="box warn">
+    <p><strong>This is a draft.</strong> Nobody has checked it on the ground yet. The crop growth part passed its test. The water part failed 2 of its 6 tests, so treat the water readings as hints, not facts.</p>
+  </div>
+  <nav class="toc" aria-label="On this page">
+    <a href="#screen">1 · The screen</a><a href="#crop">2 · Crop growth</a><a href="#water">3 · Water pattern</a><a href="#example">4 · Worked example</a><a href="#colours">5 · Colour key</a><a href="#limits">6 · Limits and words</a>
+  </nav>
+
+  <section id="screen">
+    <h2>1 · The screen in four parts</h2>
+    <figure><img src="guide/overview.webp" width="1200" height="750" alt="The whole map screen: layer list on the left, satellite map in the middle, picker box at the bottom left of the map, numbers and charts on the right." loading="lazy"></figure>
+    <ol>
+      <li><strong>Left panel.</strong> Pick <em>one</em> layer at a time (what the fields are coloured by). Below that, switch outlines on or off: water user groups (yellow), the canal (light blue), villages (white).</li>
+      <li><strong>The map.</strong> 5,313 fields on a satellite photo. Scroll or use <strong>+ / −</strong> to zoom. <strong>Click any field</strong> and the map zooms in to it, and its details appear on the left.</li>
+      <li><strong>Picker box</strong> (bottom left of the map). Choose the year and month, or the radar date. It also shows what the colours mean. "Hide" folds it away.</li>
+      <li><strong>Right panel.</strong> The headline numbers for what you picked, a bar for every dry season, the water line chart and the six tests.</li>
+    </ol>
+  </section>
+
+  <section id="crop">
+    <h2>2 · Crop growth, from NDVI and EVI <span class="chip pass">PASSED ITS TEST</span></h2>
+    <p>NDVI and EVI are two "greenness" scores worked out from Sentinel-2 satellite photos, taken every few days at 10 m detail. Bare soil scores about 0.1. A thick, healthy crop scores 0.7 or more. The map keeps one value per field per month, from January 2019 to October 2026.</p>
+
+    <ol class="steps">
+      <li><strong>Pick "Crop greenness"</strong> in the left panel. It is on when the page opens.</li>
+      <li><strong>Pick a month</strong> in the picker box. Tan means bare, dark green means a thick crop, and grey means clouds hid the field all month.
+        <div class="box good"><p><strong>Tip:</strong> look at January to March. That is the dry season, so very little rain falls. A field that stays green then is almost always getting water from the canal or a borewell. From June to October the rains make nearly everything green, so you cannot tell much.</p></div>
+      </li>
+      <li><strong>Compare years.</strong> In the right panel, "Every dry season" gives each year's typical January–March greenness. Click a year and the map jumps to that February. The canal was shut in early 2024, and you can see it:
+        <div class="two">
+          <figure><img src="guide/green_feb2023.webp" width="560" height="629" alt="February 2023: many fields dark green, mostly near the start of the canal in the north." loading="lazy"><figcaption>Feb 2023, canal open: green across most of the branch, thickest in the top half, nearer the start of the canal.</figcaption></figure>
+          <figure><img src="guide/green_feb2024.webp" width="560" height="629" alt="February 2024: most fields tan, only a few green patches." loading="lazy"><figcaption>Feb 2024, canal shut: almost all tan. The typical dry-season score fell from 0.46 to 0.24.</figcaption></figure>
+        </div>
+      </li>
+      <li><strong>Click a field to see its growth line.</strong> The left panel shows a small chart from 2019 to 2026.
+        <div class="side">
+          <div>
+            <ul>
+              <li><strong>Each hump is one crop</strong>: it greens up, peaks, then drops at harvest.</li>
+              <li><strong>The height of a hump</strong> shows how thick the crop got.</li>
+              <li><strong>Two humps a year</strong> means two crops: a rainy-season crop, then a dry-season crop on canal or borewell water.</li>
+              <li><strong>A flat, low line</strong> means the field was left empty.</li>
+              <li><strong>Breaks in the line</strong> are cloudy months with no clear photo. Nothing is filled in.</li>
+              <li><strong>Green line = NDVI, brown line = EVI.</strong> They usually move together. EVI keeps telling thick crops apart where NDVI tops out, and it is less fooled by bare soil showing between plants.</li>
+              <li>The pale blue band marks the month picked on the map.</li>
+            </ul>
+          </div>
+          <figure><img src="guide/field_card.webp" width="287" height="545" alt="The selected field card: field code, size, stretch, likely crop, a growth line chart with yearly humps, and a list of radar water labels." loading="lazy"><figcaption>One field's card. This one grows two crops most years.</figcaption></figure>
+        </div>
+      </li>
+      <li><strong>Check with your own eyes.</strong> Pick "Crop-colour photo". It is a real satellite photo of the month, shown in near-infrared, which plants reflect strongly. <strong>Strong red is a growing crop</strong>, pale pink-grey is bare or harvested land, and ponds are dark blue. Zoom in to see single fields. Turn off the overlays if the lines get in the way.
+        <figure><img src="guide/photo_feb2023.webp" width="560" height="629" alt="Crop-colour photo for February 2023: strong red patches where crops are growing, pale pink-grey elsewhere, with white field outlines on top." loading="lazy"><figcaption>Feb 2023 crop-colour photo. Strong red = crop. The thin white lines are field outlines.</figcaption></figure>
+      </li>
+    </ol>
+
+    <h3>Questions you can answer with this</h3>
+    <ul class="can">
+      <li>Which fields grow a dry-season crop, and in which years?</li>
+      <li>Did the 2024 canal shut-down hurt crops? (Yes, clearly.)</li>
+      <li>Are fields near the start of the canal greener than fields at the far end? (Zoom to the top, then to the bottom, in the same month.)</li>
+      <li>Is one field's crop doing better or worse than in past years? (Look at its growth line.)</li>
+    </ul>
+  </section>
+
+  <section id="water">
+    <h2>3 · Water pattern, from radar <span class="chip fail">FAILED 2 OF 6 TESTS</span></h2>
+    <div class="box warn">
+      <p><strong>Read this first.</strong> This map does not measure soil moisture directly. It uses radar from the Sentinel-1 satellite. Radar bounces back more strongly from wet ground, so it hints at how wet the top few centimetres are. But plants and rough soil change the signal too.</p>
+      <p>To make it fairer, every reading <strong>compares canal land with nearby land outside the canal</strong> on the same day, and days with rain in the 3 days before are left out. Even so, the tests on the water readings failed, so use them as hints.</p>
+    </div>
+
+    <ol class="steps">
+      <li><strong>Start with "Water line by stretch"</strong> in the right panel. It is the quickest way to see how far down the branch the water goes.
+        <div class="side">
+          <div>
+            <ul>
+              <li><strong>Rows are years, columns are months</strong> (January to May, the dry season).</li>
+              <li><strong>Each bar is the branch drawn straight</strong>, cut into 4 stretches: the start of the canal on the left, the last fields on the right.</li>
+              <li><strong>Dark blue</strong> means that stretch was clearly wetter than land outside the canal. <strong>Pale blue</strong> means a little wetter. <strong>Tan</strong> means drier. <strong>Grey</strong> means no dry-day radar picture.</li>
+              <li><strong>A red frame</strong> means the canal was officially shut that month (from the Tungabhadra Board's dates).</li>
+              <li>Hover over a bar to see the exact numbers.</li>
+            </ul>
+            <p><strong>What to look for:</strong> blue right across a bar means water reached the far end. Blue on the left fading to tan on the right means water reached the start but not the tail.</p>
+            <p><strong>What it shows:</strong> January 2018–2023 is blue along most of the branch. 2024, when the canal was shut, is tan everywhere, as it should be. But 2025, when the canal was open, is also mostly tan, and by March–April even open years look dry. That is why the water tests failed.</p>
+          </div>
+          <figure><img src="guide/water_line.webp" width="367" height="419" alt="Water line grid: years 2017 to 2026 down the side, January to May across, each cell a bar of 4 coloured stretches." loading="lazy"><figcaption>Water line by stretch.</figcaption></figure>
+        </div>
+      </li>
+      <li><strong>Pick "Water label"</strong> in the left panel to see a reading for each field. There are 9 radar dates: February–March 2024 (canal shut) and February–March 2025 (canal open). Choose one in the picker box.
+        <div class="two">
+          <figure><img src="guide/water_2024.webp" width="560" height="629" alt="Water labels on 20 February 2024: nearly all fields tan, meaning no water." loading="lazy"><figcaption>20 Feb 2024, canal shut: almost every field reads "No water".</figcaption></figure>
+          <figure><img src="guide/water_2025.webp" width="560" height="629" alt="Water labels on 26 February 2025: many blue fields marked canal water, spread along the branch." loading="lazy"><figcaption>26 Feb 2025, canal open: blue "Canal water" fields show up along the branch.</figcaption></figure>
+        </div>
+        <table>
+          <thead><tr><th>Label</th><th>What it means</th></tr></thead>
+          <tbody>
+            <tr><td><i class="sw" style="background:#1f6fb2"></i>Canal water</td><td>Clearly wetter than outside land (by 0.67 dB or more), and the canal was open.</td></tr>
+            <tr><td><i class="sw" style="background:#e0802b"></i>Borewell likely</td><td>Clearly wetter, but the canal was shut, so the water probably came from a borewell or pond.</td></tr>
+            <tr><td><i class="sw" style="background:#d8c7a3"></i>No water</td><td>Not wetter than outside land.</td></tr>
+            <tr><td><i class="sw" style="background:#9aa3a0"></i>Can't tell</td><td>Only a little wetter, or no canal date for that day.</td></tr>
+            <tr><td><i class="sw" style="background:#8e7cc3"></i>Rain, can't tell</td><td>It rained in the 3 days before, so the reading is skipped.</td></tr>
+          </tbody>
+        </table>
+      </li>
+      <li><strong>Click a field</strong> to see all 9 of its labels, each with how sure it is. <em>High</em> means a field over 1 ha, the same label as the time before, and at least 2 dry radar pictures in the last 30 days. <em>Medium</em> means 0.2 ha or more and the same label as before. <em>Low</em> is everything else. Most fields are small, so most labels are Medium or Low.</li>
+      <li><strong>Put water and greenness together.</strong> A field that stays green in February 2024, when the canal was shut, got its water from somewhere else, probably a borewell. A field that reads "Canal water" in 2025 but stays tan in the greenness layer may have been flooded for sowing, or the reading may be wrong.</li>
+    </ol>
+
+    <h3>What you can and cannot say</h3>
+    <ul class="can">
+      <li>You can say the radar saw the branch much drier in early 2024, when the canal was shut.</li>
+      <li>The start of the branch usually reads wetter than the far end. But that also showed up in 2024, when the canal was shut, so it may not be canal water at all.</li>
+      <li>You cannot yet say how much canal water each field got, or show water "moving" from week to week. The tests that would back that up failed.</li>
+      <li>Radar cannot tell canal water from borewell water. It only tells wet from dry.</li>
+    </ul>
+  </section>
+
+  <section id="example">
+    <h2>4 · Worked example: did the 2024 canal shut-down matter?</h2>
+    <ol class="steps">
+      <li>In <strong>Every dry season</strong>, compare the bars: 2023 scored 0.46 and 2024 (red) scored 0.24. Crops were about half as green.</li>
+      <li>Click <strong>2023</strong>, then <strong>2024</strong>. On the map, the green patches near the start of the canal disappear in 2024.</li>
+      <li>In the <strong>Water line</strong>, the 2024 row is tan in every month, while 2018–2023 Januaries are blue. The radar agrees the land was dry.</li>
+      <li>Pick <strong>Water label</strong> and <strong>20 Feb 2024</strong>: almost no blue. Switch to <strong>26 Feb 2025</strong>: blue fields come back.</li>
+      <li>Click a field that was still green in Feb 2024. Its growth line shows whether it kept a dry-season crop. If it did, the canal did not water it that year, so it probably had a borewell.</li>
+    </ol>
+    <p><strong>What you can conclude:</strong> yes. With the canal shut, both the greenness and the radar wetness dropped sharply. The greenness part is solid. The radar part agrees here, but it was not reliable in other years.</p>
+  </section>
+
+  <section id="colours">
+    <h2>5 · Colour key</h2>
+    <table>
+      <thead><tr><th>On the map</th><th>Means</th></tr></thead>
+      <tbody>
+        <tr><td><i class="sw" style="background:linear-gradient(90deg,#c9b48a,#d9d27a,#8fbf5a,#3f8f3f,#1e5a2c);width:60px"></i></td><td>Crop greenness: tan = bare (0.1), dark green = thick crop (0.7)</td></tr>
+        <tr><td><i class="sw" style="background:#cfd6e0"></i>Grey field</td><td>No clear photo or no reading for that month or date</td></tr>
+        <tr><td><i class="sw" style="background:#ffd84d"></i>Yellow line</td><td>Water user group boundaries (the D-95 command area)</td></tr>
+        <tr><td><i class="sw" style="background:#38bdf8"></i>Light blue line</td><td>The D-95 canal and the main canal</td></tr>
+        <tr><td><i class="sw" style="background:#ff3b30"></i>Red outline</td><td>The field you clicked</td></tr>
+        <tr><td><i class="sw" style="background:#e3263a"></i>Red in the photo</td><td>Growing crop (crop-colour photo layer)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="limits">
+    <h2>6 · Limits and words</h2>
+    <h3>Limits</h3>
+    <ul>
+      <li>Not checked on the ground. No farmer was asked.</li>
+      <li>Field outlines and crop names are Google's guesses (from Google's Agricultural Understanding data). "Likely rice" may be wrong.</li>
+      <li>Months with heavy cloud have no greenness value. Nothing is guessed to fill the gap.</li>
+      <li>The satellite photo under the fields is from Esri, and its date is not known. The crop-colour photo layer is dated by month.</li>
+      <li>Canal open and shut dates come from Tungabhadra Board yearly reports. From mid-April 2025 onward there is no report yet, so those months have no date.</li>
+      <li>No farmer names or survey numbers are used. Field codes are map codes (Plus Codes), not ownership records.</li>
+    </ul>
+    <h3>Words</h3>
+    <table>
+      <tbody>
+        <tr><th scope="row">NDVI</th><td>A greenness score from a satellite photo, from about 0 (bare) to 1 (very thick plants).</td></tr>
+        <tr><th scope="row">EVI</th><td>A second greenness score, better for thick crops and less fooled by bare soil.</td></tr>
+        <tr><th scope="row">Radar</th><td>The Sentinel-1 satellite sends out its own signal and measures what bounces back. It works through clouds. Wet ground bounces back more.</td></tr>
+        <tr><th scope="row">dB</th><td>The unit for radar strength. Here, 0.67 dB is the gap counted as "clearly wetter".</td></tr>
+        <tr><th scope="row">Stretch</th><td>One quarter of the branch's length, counted from where the canal starts.</td></tr>
+        <tr><th scope="row">Water user group</th><td>A farmers' group that shares water from one part of the canal. Their outlines mark the D-95 area.</td></tr>
+      </tbody>
+    </table>
+    <p class="small" style="font-size:.82rem;color:var(--muted)">Data: Sentinel-2 and Sentinel-1 (Copernicus) through Google Earth Engine · fields: Google Agricultural Understanding via Well Labs · canal dates: <a href="https://tbboard.gov.in/annual-reports/" target="_blank" rel="noopener">Tungabhadra Board yearly reports</a> · base photo: Esri World Imagery.</p>
+  </section>
+
+  <p style="text-align:center;margin-top:28px"><a class="btn" href="./">Open the map</a></p>
+</main>
+</body>
+</html>
